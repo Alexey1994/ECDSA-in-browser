@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <script>
+        async function generateKeyPair() {
+            var keys = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify'])
+            return keys
+        }
+
+        async function signMessage(message, privateKey) {
+            var messageHash = await crypto.subtle.digest('SHA-256', new TextEncoder('utf-8').encode(message))
+            var signature = await crypto.subtle.sign({ name: 'ECDSA', hash: { name: 'SHA-256' } }, privateKey, messageHash)
+
+            return signature
+        }
+
+        async function verifyMessage(message, publicKey, signature) {
+            var messageHash = await crypto.subtle.digest('SHA-256', new TextEncoder('utf-8').encode(message))
+            var result = await crypto.subtle.verify({ name: 'ECDSA', hash: { name: 'SHA-256' } }, publicKey, signature, messageHash)
+
+            return result
+        }
+
+        async function sha256(message) {
+            return await crypto.subtle.digest('SHA-256', new TextEncoder('utf-8').encode(message))
+        }
+
+        (async () => {
+            var keyPair = await generateKeyPair()
+            var privateKey = keyPair.privateKey
+            var publicKey = keyPair.publicKey
+
+            var signature = await signMessage('abc', privateKey)
+            console.log(signature)
+
+            var verifyResult = await verifyMessage('abc', publicKey, signature)
+            console.log(verifyResult)
+        })()
+    </script>
+</body>
+</html>
